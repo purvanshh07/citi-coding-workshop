@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>java-service</artifactId>
+    <artifactId>performance-service</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 

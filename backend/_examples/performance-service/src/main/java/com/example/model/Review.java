@@ -37,6 +37,12 @@ public class Review {
         this.feedback = feedback;
         this.reviewDate = reviewDate;
     }
+    @PrePersist
+    protected void onCreate() {
+        if (this.reviewDate == null) {
+            this.reviewDate = java.time.LocalDate.now();
+        }
+    }
 
     // --- Getters & Setters ---
     public Long getId() { return id; }

@@ -126,7 +126,7 @@ body {
 }
 .carousel-container::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
 
-..carousel-btn {
+.carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);

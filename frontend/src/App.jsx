@@ -9,7 +9,7 @@ export default function App() {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [reviews, setReviews] = useState([]);
     const [reviewsMap, setReviewsMap] = useState({}); // New: Stores reviews for every employee
-
+    const [gapAnalysis, setGapAnalysis] = useState(null);
     // Modal State
     const [isAddingReview, setIsAddingReview] = useState(false);
     const [newReviewScore, setNewReviewScore] = useState("5");
@@ -47,7 +47,13 @@ export default function App() {
 
     const loadProfile = (employee) => {
         setSelectedEmployee(employee);
+        setGapAnalysis(null); // Reset it while loading
+
+        // Fetch Reviews from Port 8082
         api.getReviewsForEmployee(employee.id).then(setReviews).catch(() => {});
+
+        // Fetch Gap Analysis from Port 8083
+        api.getGapAnalysis(employee.id).then(setGapAnalysis).catch(() => {});
     };
 
     const handleGoHome = () => {
@@ -101,7 +107,13 @@ export default function App() {
             setNewReviewFeedback("");
             setNewReviewScore("5");
             loadProfile(selectedEmployee); // This pulls the fresh data from the DB
+            const freshReviews = await api.getReviewsForEmployee(selectedEmployee.id);
 
+            // Update the reviewsMap so the dashboard card updates instantly
+            setReviewsMap(prevMap => ({
+                ...prevMap,
+                [selectedEmployee.id]: freshReviews
+            }));
         } catch (error) {
             console.error("Submission Error:", error);
             alert("Failed to save the review. Make sure Port 8082 is running without errors!");
@@ -206,7 +218,7 @@ export default function App() {
                                             <p style={{ color: 'var(--purple-accent)', margin: '0 0 10px 0', fontWeight: 'bold' }}>{emp.jobTitle}</p>
                                             <p style={{ color: 'var(--text-muted)', margin: '0', fontSize: '0.9rem' }}>ID: #{emp.id}</p>
                                         </div>
-                                        <div className="card-review-preview">
+                                        <div className="card-review-preview" style={{ minHeight: '70px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                             {reviewsMap[emp.id]?.length > 0 ? (
                                                 <>
                                                     <span style={{ color: '#fbbf24' }}>⭐ {reviewsMap[emp.id][0].score}/5</span>
@@ -214,6 +226,26 @@ export default function App() {
                                                         "{reviewsMap[emp.id][0].feedback.substring(0, 30)}..."
                                                     </p>
                                                 </>
+                                            ) : currentUser?.role === 'HR' ? (
+                                                <div
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        border: '1px dashed rgba(255,255,255,0.2)',
+                                                        borderRadius: '6px',
+                                                        padding: '10px',
+                                                        textAlign: 'center',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onClick={() => {
+                                                        setSelectedEmployee(emp);
+                                                        setIsAddingReview(true);
+                                                    }}
+                                                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--purple-accent)'; e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'; }}
+                                                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+                                                    title={`Write a review for ${emp.firstName}`}
+                                                >
+                                                    <span style={{ fontSize: '0.85rem', color: 'var(--purple-accent)', fontWeight: 'bold' }}>+ Write First Review</span>
+                                                </div>
                                             ) : (
                                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No reviews yet</span>
                                             )}
@@ -254,7 +286,50 @@ export default function App() {
                                 {selectedEmployee.department} Division | Active Status 🟢
                             </p>
                         </div>
+                        {/* --- NEW: SKILLS & GAP ANALYSIS (PORT 8083) --- */}
+                        <div style={{ marginTop: '40px', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <h3 style={{ margin: '0 0 20px 0' }}>Skills & Development</h3>
 
+                            {!gapAnalysis ? (
+                                <p style={{ color: 'var(--text-muted)' }}>Loading skill data from Port 8083...</p>
+                            ) : (
+                                <div>
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '10px', fontSize: '0.9rem' }}>ACQUIRED SKILLS</span>
+                                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                            {gapAnalysis.acquiredRequiredSkills.length === 0 && <span style={{ color: 'var(--text-muted)' }}>No recorded skills.</span>}
+                                            {gapAnalysis.acquiredRequiredSkills.map(skill => (
+                                                <span key={skill} style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '6px 14px', borderRadius: '50px', fontSize: '0.85rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                          ✓ {skill}
+                        </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '10px', fontSize: '0.9rem' }}>MISSING REQUIREMENTS</span>
+                                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                            {gapAnalysis.missingSkills.length === 0 ? (
+                                                <span style={{ color: '#34d399', fontWeight: 'bold' }}>All core requirements met! 🌟</span>
+                                            ) : (
+                                                gapAnalysis.missingSkills.map(skill => (
+                                                    <span key={skill} style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '6px 14px', borderRadius: '50px', fontSize: '0.85rem', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                            Target: {skill}
+                          </span>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {gapAnalysis.promotionReady && (
+                                        <div style={{ marginTop: '20px', padding: '10px', background: 'rgba(139, 92, 246, 0.2)', borderLeft: '4px solid var(--purple-accent)', color: 'white', fontSize: '0.9rem' }}>
+                                            🚀 <strong>Status:</strong> Approved for Promotion Track
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {/* --- END SKILLS SECTION --- */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
                             <h3 style={{ margin: 0 }}>Performance History</h3>
                             {currentUser.role === 'HR' && (

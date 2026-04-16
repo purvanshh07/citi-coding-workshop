@@ -13,5 +13,16 @@ export const api = {
     getReviewsForEmployee: async (employeeId) => {
         const res = await fetch(`${PERFORMANCE_URL}/employee/${employeeId}`);
         return res.json();
+    },
+    // Add this inside your api object
+    getGapAnalysis: async (employeeId) => {
+        try {
+            const response = await fetch(`http://localhost:8083/api/v1/training/employee/${employeeId}/gap-analysis`);
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            console.error("Training Service offline", error);
+            return null;
+        }
     }
 };

@@ -736,7 +736,7 @@ export default function App() {
                                 padding: '28px', borderRadius: '16px',
                                 border: '1px solid rgba(255,255,255,0.07)',
                             }}>
-                                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Training Gap (8083)</h3>
+                                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Training Gap </h3>
                                 {gapAnalysis === null ? (
                                     <p style={{ opacity: 0.4 }}>Loading skills data…</p>
                                 ) : (
@@ -771,7 +771,7 @@ export default function App() {
                                     display: 'flex', justifyContent: 'space-between',
                                     alignItems: 'center', marginBottom: '16px',
                                 }}>
-                                    <h3 style={{ margin: 0 }}>Reviews (8082)</h3>
+                                    <h3 style={{ margin: 0 }}>Review</h3>
                                     {isHR && (
                                         <button className="btn-primary"
                                                 style={{ padding: '5px 14px', fontSize: '0.8rem' }}

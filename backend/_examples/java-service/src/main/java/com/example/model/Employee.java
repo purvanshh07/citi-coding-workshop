@@ -12,6 +12,13 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // In Employee.java
+    // No @NotBlank yet! Just a normal string.
+    private String password;
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
 

@@ -4,9 +4,14 @@
 // call, array/shape validation so no crash can propagate to React.
 // ============================================================
 
-const IDENTITY_URL  = 'http://localhost:8081/api/v1/employees';
-const PERFORMANCE_URL = 'http://localhost:8082/api/v1/reviews';   // FIX: was missing /api/v1/reviews
-const TRAINING_URL  = 'http://localhost:8083/api/v1/training';
+// ============================================================
+// DYNAMIC AWS API GATEWAY URLs
+// (Injected automatically by ./bin/generate-env.sh during deployment)
+// ============================================================
+
+const IDENTITY_URL  = import.meta.env.VITE_IDENTITY_API_URL || 'http://localhost:8081/api/v1/employees';
+const PERFORMANCE_URL = import.meta.env.VITE_PERFORMANCE_API_URL || 'http://localhost:8082/api/v1/reviews';
+const TRAINING_URL  = import.meta.env.VITE_TRAINING_API_URL || 'http://localhost:8083/api/v1/training';
 
 export const api = {
 

@@ -32,12 +32,12 @@ locals {
       name    = name
       arch    = "x86_64"
       runtime = "java25"
-      handler = "com.example.Handler::handleRequest"
-      path    = abspath(format("%s/../backend/%s/target", path.module, name))
+handler = "com.example.StreamLambdaHandler::handleRequest"
+path    = abspath(format("%s/../backend/%s/target/%s-1.0.0.jar", path.module, name, name))
       mvn_cmd = [
         format("cd %s", abspath(format("%s/../backend/%s", path.module, name))),
         "mvn clean package -DskipTests",
-        format("find ./target ! -name '%s*.jar' -delete", name),
+        format("find ./target -type f ! -name '%s*.jar' -delete", name),
       ]
     }
   }
